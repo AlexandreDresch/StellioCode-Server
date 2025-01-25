@@ -5,7 +5,10 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "developer_projects")
+@Table(
+        name = "developer_projects",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"developer_id", "project_id"})
+)
 @Getter
 @Setter
 @Builder
@@ -25,10 +28,17 @@ public class DeveloperProject {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "role_in_project", length = 50)
-    private String roleInProject;
+    private ProjectRole roleInProject;
 
     @Column(name = "assigned_at", nullable = false)
     private java.time.LocalDateTime assignedAt;
+
+    @PrePersist
+    protected void onAssign() {
+        this.assignedAt = java.time.LocalDateTime.now();
+    }
 }
+
 

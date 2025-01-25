@@ -1,10 +1,11 @@
 package com.stelliocode.backend.entity;
 
-public enum ProjectStatus {
-    PENDING,
-    IN_PROGRESS,
-    COMPLETED,
-    CANCELLED;
+public enum ProjectRole {
+    BACKEND,
+    FRONTEND,
+    FULLSTACK,
+    QA,
+    PM;
 
     @Override
     public String toString() {
