@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
@@ -32,4 +33,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("status") String status,
             Pageable pageable
     );
+
+    Optional<User> findById(UUID developerId);
 }
