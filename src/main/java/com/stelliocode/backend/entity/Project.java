@@ -1,8 +1,7 @@
 package com.stelliocode.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -10,8 +9,11 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "projects")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Project {
 
     @Id
@@ -33,7 +35,7 @@ public class Project {
 
     @ManyToOne
     @JoinColumn(name = "client_id", referencedColumnName = "id")
-    private User client;
+    private Client client;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
