@@ -4,7 +4,9 @@ import com.stelliocode.backend.dto.BaseResponseDTO;
 import com.stelliocode.backend.dto.DeveloperResponseDTO;
 import com.stelliocode.backend.dto.SummaryDTO;
 import com.stelliocode.backend.entity.DeveloperProject;
+import com.stelliocode.backend.entity.Plan;
 import com.stelliocode.backend.service.DeveloperService;
+import com.stelliocode.backend.service.PlanService;
 import com.stelliocode.backend.service.SummaryService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,10 +15,12 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -25,10 +29,12 @@ public class AdminDashboardController {
 
     private final SummaryService summaryService;
     private final DeveloperService developerService;
+    private final PlanService planService;
 
-    public AdminDashboardController(SummaryService summaryService, DeveloperService developerService) {
+    public AdminDashboardController(SummaryService summaryService, DeveloperService developerService, PlanService planService) {
         this.summaryService = summaryService;
         this.developerService = developerService;
+        this.planService = planService;
     }
 
     @GetMapping("/summary")
@@ -109,5 +115,28 @@ public class AdminDashboardController {
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(400).body(new BaseResponseDTO(ex.getMessage(), false));
         }
+    }
+
+    @PostMapping("/plans")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Plan createPlan(@RequestBody Plan plan) {
+        return planService.createPlan(plan);
+    }
+
+    @PutMapping("/plans/{id}")
+    public Plan updatePlan(@PathVariable UUID id, @RequestBody Plan updatedPlan) {
+        return planService.updatePlan(id, updatedPlan);
+    }
+
+    @DeleteMapping("/plans/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePlan(@PathVariable UUID id) {
+        planService.deletePlan(id);
+    }
+
+    @GetMapping("/plans/stats")
+    public ResponseEntity<List<Map<String, Object>>> getPlanStatistics() {
+        List<Map<String, Object>> stats = planService.getPlanStatistics();
+        return ResponseEntity.ok(stats);
     }
 }
