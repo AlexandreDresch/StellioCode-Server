@@ -28,6 +28,9 @@ public class Client {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
+    @Column(nullable = false, length = 20)
+    private String phone;
+
     @Column(name = "profile_picture", columnDefinition = "TEXT")
     private String profilePicture;
 
