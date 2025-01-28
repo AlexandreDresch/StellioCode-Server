@@ -48,4 +48,8 @@ public class PlanService {
     public List<Map<String, Object>> getPlanStatistics() {
         return planRepository.findPlanStatistics();
     }
+
+    public Plan getPlanWithFaqs(UUID id) {
+        return planRepository.findByIdWithFaqs(id);
+    }
 }

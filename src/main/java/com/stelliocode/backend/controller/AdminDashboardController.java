@@ -1,11 +1,11 @@
 package com.stelliocode.backend.controller;
 
-import com.stelliocode.backend.dto.BaseResponseDTO;
-import com.stelliocode.backend.dto.DeveloperResponseDTO;
-import com.stelliocode.backend.dto.SummaryDTO;
+import com.stelliocode.backend.dto.*;
 import com.stelliocode.backend.entity.DeveloperProject;
+import com.stelliocode.backend.entity.Faq;
 import com.stelliocode.backend.entity.Plan;
 import com.stelliocode.backend.service.DeveloperService;
+import com.stelliocode.backend.service.FaqService;
 import com.stelliocode.backend.service.PlanService;
 import com.stelliocode.backend.service.SummaryService;
 import org.springframework.data.domain.Page;
@@ -30,11 +30,14 @@ public class AdminDashboardController {
     private final SummaryService summaryService;
     private final DeveloperService developerService;
     private final PlanService planService;
+    private final FaqService faqService;
 
-    public AdminDashboardController(SummaryService summaryService, DeveloperService developerService, PlanService planService) {
+
+    public AdminDashboardController(SummaryService summaryService, DeveloperService developerService, PlanService planService, FaqService faqService) {
         this.summaryService = summaryService;
         this.developerService = developerService;
         this.planService = planService;
+        this.faqService = faqService;
     }
 
     @GetMapping("/summary")
@@ -138,5 +141,24 @@ public class AdminDashboardController {
     public ResponseEntity<List<Map<String, Object>>> getPlanStatistics() {
         List<Map<String, Object>> stats = planService.getPlanStatistics();
         return ResponseEntity.ok(stats);
+    }
+
+    @PostMapping("/plans/faq")
+    public ResponseEntity<Faq> addFaq(@RequestBody CreateFaqRequestDTO faqRequest) {
+        Faq faq = faqService.addFaq(faqRequest.getPlanId(), faqRequest.getQuestion(), faqRequest.getAnswer());
+        return ResponseEntity.ok(faq);
+    }
+
+    @PutMapping("/plans/faq/{id}")
+    public ResponseEntity<Faq> updateFaq(@PathVariable UUID id,
+                                         @RequestBody UpdateFaqRequestDTO faqRequest) {
+        Faq faq = faqService.updateFaq(id, faqRequest.getQuestion(), faqRequest.getAnswer());
+        return ResponseEntity.ok(faq);
+    }
+
+    @DeleteMapping("/plans/faq/{id}")
+    public ResponseEntity<Void> deleteFaq(@PathVariable UUID id) {
+        faqService.deleteFaq(id);
+        return ResponseEntity.noContent().build();
     }
 }
