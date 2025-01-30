@@ -84,7 +84,7 @@ public class DeveloperService {
 
     @Transactional
     public List<DeveloperProject> assignDevelopersToProject(List<UUID> developerIds, UUID projectId, String roleInProject) {
-        Project project = projectRepository.findById(String.valueOf(projectId))
+        Project project = projectRepository.findById(UUID.fromString(String.valueOf(projectId)))
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
         List<DeveloperProject> associations = new ArrayList<>();
@@ -110,7 +110,7 @@ public class DeveloperService {
 
     @Transactional
     public void removeDevelopersFromProject(List<UUID> developerIds, UUID projectId) {
-        projectRepository.findById(String.valueOf(projectId))
+        projectRepository.findById(UUID.fromString(String.valueOf(projectId)))
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
         for (UUID developerId : developerIds) {

@@ -1,5 +1,7 @@
 package com.stelliocode.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,10 +37,12 @@ public class Project {
 
     @ManyToOne
     @JoinColumn(name = "client_id", referencedColumnName = "id")
+    @JsonBackReference
     private Client client;
 
     @ManyToOne
     @JoinColumn(name = "plan_id", referencedColumnName = "id")
+    @JsonManagedReference
     private Plan plan;
 
     @Column(nullable = false, precision = 10, scale = 2)

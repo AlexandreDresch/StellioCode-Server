@@ -1,5 +1,6 @@
 package com.stelliocode.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,6 +41,7 @@ public class Plan {
     private List<Faq> faqs;
 
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
     private List<Project> projects = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)

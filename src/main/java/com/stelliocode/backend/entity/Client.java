@@ -1,9 +1,11 @@
 package com.stelliocode.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -33,6 +35,10 @@ public class Client {
 
     @Column(name = "profile_picture", columnDefinition = "TEXT")
     private String profilePicture;
+
+    @OneToMany(mappedBy = "client")
+    @JsonIgnore
+    private List<Project> projects;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
