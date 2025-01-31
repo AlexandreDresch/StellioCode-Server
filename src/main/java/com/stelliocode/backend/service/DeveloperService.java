@@ -1,6 +1,8 @@
 package com.stelliocode.backend.service;
 
+import com.stelliocode.backend.assembler.ProjectModelAssembler;
 import com.stelliocode.backend.dto.DeveloperResponseDTO;
+import com.stelliocode.backend.dto.ProjectWithProgressResponseDTO;
 import com.stelliocode.backend.entity.DeveloperProject;
 import com.stelliocode.backend.entity.Project;
 import com.stelliocode.backend.entity.ProjectRole;
@@ -11,7 +13,12 @@ import com.stelliocode.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,6 +34,9 @@ public class DeveloperService {
     private final UserRepository userRepository;
     private final DeveloperProjectRepository developerProjectRepository;
     private final ProjectRepository projectRepository;
+    private final ProjectModelAssembler projectModelAssembler;
+    private final PagedResourcesAssembler<Project> pagedResourcesAssembler;
+
 
     public Page<DeveloperResponseDTO> getDevelopers(String name, String status, Pageable pageable) {
         String nameFilter = name == null ? "%" : "%" + name + "%";
@@ -48,6 +58,19 @@ public class DeveloperService {
                     .activeProjects(activeProjects)
                     .build();
         });
+    }
+
+    public PagedModel<EntityModel<ProjectWithProgressResponseDTO>> getDeveloperProjects(UUID developerId, int page, int size, String status) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("title").ascending());
+
+        Page<Project> projects;
+        if (status != null && !status.isEmpty()) {
+            projects = projectRepository.findByDeveloperIdAndStatus(developerId, status, pageable);
+        } else {
+            projects = projectRepository.findByDeveloperId(developerId, pageable);
+        }
+
+        return pagedResourcesAssembler.toModel(projects, projectModelAssembler);
     }
 
     public boolean updateDeveloperStatus(UUID developerId, String status) {

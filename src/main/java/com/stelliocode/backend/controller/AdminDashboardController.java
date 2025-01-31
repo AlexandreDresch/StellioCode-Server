@@ -4,10 +4,7 @@ import com.stelliocode.backend.dto.*;
 import com.stelliocode.backend.entity.DeveloperProject;
 import com.stelliocode.backend.entity.Faq;
 import com.stelliocode.backend.entity.Plan;
-import com.stelliocode.backend.service.DeveloperService;
-import com.stelliocode.backend.service.FaqService;
-import com.stelliocode.backend.service.PlanService;
-import com.stelliocode.backend.service.SummaryService;
+import com.stelliocode.backend.service.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,13 +28,15 @@ public class AdminDashboardController {
     private final DeveloperService developerService;
     private final PlanService planService;
     private final FaqService faqService;
+    private final ProjectService projectService;
 
 
-    public AdminDashboardController(SummaryService summaryService, DeveloperService developerService, PlanService planService, FaqService faqService) {
+    public AdminDashboardController(SummaryService summaryService, DeveloperService developerService, PlanService planService, FaqService faqService, ProjectService projectService) {
         this.summaryService = summaryService;
         this.developerService = developerService;
         this.planService = planService;
         this.faqService = faqService;
+        this.projectService = projectService;
     }
 
     @GetMapping("/summary")
@@ -64,6 +63,17 @@ public class AdminDashboardController {
                 .withSelfRel());
 
         return pagedModel;
+    }
+
+    @GetMapping("/developers/{developerId}/projects")
+    public ResponseEntity<PagedModel<EntityModel<ProjectWithProgressResponseDTO>>> getDeveloperProjects(
+            @PathVariable UUID developerId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String status
+    ) {
+        PagedModel<EntityModel<ProjectWithProgressResponseDTO>> projects = developerService.getDeveloperProjects(developerId, page, size, status);
+        return ResponseEntity.ok(projects);
     }
 
     @PatchMapping("/developers/{id}/approve")
@@ -96,11 +106,11 @@ public class AdminDashboardController {
     @PostMapping("/projects/{projectId}/developers")
     public ResponseEntity<BaseResponseDTO> assignDevelopersToProject(
             @PathVariable("projectId") UUID projectId,
-            @RequestBody List<UUID> developerIds,
+            @RequestBody DeveloperAssignmentRemovalRequestDTO request,
             @RequestParam(value = "roleInProject", required = false) String roleInProject
     ) {
         try {
-            List<DeveloperProject> associations = developerService.assignDevelopersToProject(developerIds, projectId, roleInProject);
+            List<DeveloperProject> associations = developerService.assignDevelopersToProject(request.getDeveloperIds(), projectId, roleInProject);
             return ResponseEntity.ok(new BaseResponseDTO("Developer(s) assigned to project successfully.", true));
         } catch (IllegalArgumentException | IllegalStateException ex) {
             return ResponseEntity.status(400).body(new BaseResponseDTO(ex.getMessage(), false));
@@ -110,10 +120,10 @@ public class AdminDashboardController {
     @DeleteMapping("/projects/{projectId}/developers")
     public ResponseEntity<BaseResponseDTO> removeDevelopersFromProject(
             @PathVariable("projectId") UUID projectId,
-            @RequestBody List<UUID> developerIds
+            @RequestBody DeveloperAssignmentRemovalRequestDTO request
     ) {
         try {
-            developerService.removeDevelopersFromProject(developerIds, projectId);
+            developerService.removeDevelopersFromProject(request.getDeveloperIds(), projectId);
             return ResponseEntity.ok(new BaseResponseDTO("Developer(s) removed from project successfully.", true));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(400).body(new BaseResponseDTO(ex.getMessage(), false));
@@ -160,5 +170,11 @@ public class AdminDashboardController {
     public ResponseEntity<Void> deleteFaq(@PathVariable UUID id) {
         faqService.deleteFaq(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/projects")
+    public ResponseEntity<List<InternalProjectDetailsResponseDTO>> getAllProjects() {
+        List<InternalProjectDetailsResponseDTO> projects = projectService.getAllProjects();
+        return ResponseEntity.ok(projects);
     }
 }
