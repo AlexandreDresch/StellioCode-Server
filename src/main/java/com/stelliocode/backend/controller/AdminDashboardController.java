@@ -173,8 +173,11 @@ public class AdminDashboardController {
     }
 
     @GetMapping("/projects")
-    public ResponseEntity<List<InternalProjectDetailsResponseDTO>> getAllProjects() {
-        List<InternalProjectDetailsResponseDTO> projects = projectService.getAllProjects();
+    public ResponseEntity<PagedModel<InternalProjectDetailsResponseDTO>> getAllProjects(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        PagedModel<InternalProjectDetailsResponseDTO> projects = projectService.getAllProjectsWithDevelopers(page, size);
         return ResponseEntity.ok(projects);
     }
 }

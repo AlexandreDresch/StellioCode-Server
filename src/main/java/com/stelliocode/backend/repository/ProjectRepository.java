@@ -29,4 +29,6 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
 
     @Query("SELECT p FROM Project p JOIN DeveloperProject dp ON p.id = dp.project.id WHERE dp.developer.id = :developerId AND p.status = :status")
     Page<Project> findByDeveloperIdAndStatus(@Param("developerId") UUID developerId, @Param("status") String status, Pageable pageable);
+
+    Page<Project> findAll(Pageable pageable);
 }

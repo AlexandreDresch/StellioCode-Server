@@ -1,5 +1,6 @@
 package com.stelliocode.backend.service;
 
+import com.stelliocode.backend.controller.AdminDashboardController;
 import com.stelliocode.backend.dto.DeveloperDTO;
 import com.stelliocode.backend.dto.InternalProjectDetailsResponseDTO;
 import com.stelliocode.backend.entity.*;
@@ -7,6 +8,11 @@ import com.stelliocode.backend.repository.DeveloperProjectsRepository;
 import com.stelliocode.backend.repository.PlanRepository;
 import com.stelliocode.backend.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -36,17 +42,17 @@ public class ProjectService {
         return projectRepository.save(project);
     }
 
-    public List<InternalProjectDetailsResponseDTO> getAllProjects() {
-        List<Project> projects = projectRepository.findAll();
+    public PagedModel<InternalProjectDetailsResponseDTO> getAllProjectsWithDevelopers(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Project> projectsPage = projectRepository.findAll(pageable);
 
-        return projects.stream()
+        List<InternalProjectDetailsResponseDTO> projects = projectsPage.getContent().stream()
                 .map(project -> {
                     List<DeveloperProjects> developerProjects = developerProjectsRepository.findByProjectId(project.getId());
 
                     List<DeveloperDTO> developers = developerProjects.stream()
                             .map(dp -> {
                                 User developer = dp.getDeveloper();
-
                                 return new DeveloperDTO(
                                         developer.getId().toString(),
                                         developer.getFullName(),
@@ -71,7 +77,18 @@ public class ProjectService {
                     );
                 })
                 .collect(Collectors.toList());
+
+        return PagedModel.of(
+                projects,
+                new PagedModel.PageMetadata(
+                        projectsPage.getSize(),
+                        projectsPage.getNumber(),
+                        projectsPage.getTotalElements(),
+                        projectsPage.getTotalPages()
+                ),
+                WebMvcLinkBuilder.linkTo(
+                        WebMvcLinkBuilder.methodOn(AdminDashboardController.class).getAllProjects(page, size)
+                ).withSelfRel()
+        );
     }
-
-
 }
