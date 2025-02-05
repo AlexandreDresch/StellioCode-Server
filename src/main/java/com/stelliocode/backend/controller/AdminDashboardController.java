@@ -5,6 +5,7 @@ import com.stelliocode.backend.entity.DeveloperProject;
 import com.stelliocode.backend.entity.Faq;
 import com.stelliocode.backend.entity.Plan;
 import com.stelliocode.backend.service.*;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,14 +31,18 @@ public class AdminDashboardController {
     private final PlanService planService;
     private final FaqService faqService;
     private final ProjectService projectService;
+    private final FeaturedProjectService featuredProjectService;
+    private final AuthenticationService authenticationService;
 
 
-    public AdminDashboardController(SummaryService summaryService, DeveloperService developerService, PlanService planService, FaqService faqService, ProjectService projectService) {
+    public AdminDashboardController(SummaryService summaryService, DeveloperService developerService, PlanService planService, FaqService faqService, ProjectService projectService, FeaturedProjectService featuredProjectService, AuthenticationService authenticationService) {
         this.summaryService = summaryService;
         this.developerService = developerService;
         this.planService = planService;
         this.faqService = faqService;
         this.projectService = projectService;
+        this.featuredProjectService = featuredProjectService;
+        this.authenticationService = authenticationService;
     }
 
     @GetMapping("/summary")
@@ -179,5 +185,28 @@ public class AdminDashboardController {
 
         PagedModel<InternalProjectDetailsResponseDTO> projects = projectService.getAllProjectsWithDevelopers(page, size);
         return ResponseEntity.ok(projects);
+    }
+
+    @PostMapping("/featured-projects")
+    public ResponseEntity<FeaturedProjectDTO> createFeaturedProject(
+            @Valid @ModelAttribute CreateFeaturedProjectRequestDTO requestDTO,
+            Principal principal) {
+
+        UUID userId = authenticationService.getUserIdFromPrincipal(principal.getName());
+        return ResponseEntity.ok(featuredProjectService.createFeaturedProject(userId, requestDTO.getTitle(), requestDTO.getDescription(), requestDTO.getImage()));
+    }
+
+    @PutMapping("/featured-projects/{id}")
+    public ResponseEntity<FeaturedProjectDTO> updateFeaturedProject(
+            @PathVariable("id") UUID projectId,
+            @ModelAttribute UpdateFeaturedProjectRequest request) {
+
+        return ResponseEntity.ok(featuredProjectService.updateFeaturedProject(projectId, request));
+    }
+
+    @DeleteMapping("/featured-projects/{id}")
+    public ResponseEntity<Void> deleteFeaturedProject(@PathVariable("id") UUID projectId) {
+        featuredProjectService.deleteFeaturedProject(projectId);
+        return ResponseEntity.noContent().build();
     }
 }
