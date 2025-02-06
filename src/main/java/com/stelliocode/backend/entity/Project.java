@@ -22,7 +22,7 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String title;
 
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -44,6 +44,11 @@ public class Project {
     @JoinColumn(name = "plan_id", referencedColumnName = "id")
     @JsonManagedReference
     private Plan plan;
+
+    @ManyToOne
+    @JoinColumn(name = "service_id", referencedColumnName = "id", nullable = false)
+    @JsonManagedReference
+    private Service service;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;

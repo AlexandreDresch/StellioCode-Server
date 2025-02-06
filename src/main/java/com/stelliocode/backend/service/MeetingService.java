@@ -20,10 +20,10 @@ public class MeetingService {
 
     @Transactional
     public Meeting createInitialMeeting(String googleId, String name, String email, String phone, String profilePicture,
-                                        UUID planId, String title, String description, Double price,
+                                        UUID planId, UUID serviceId, String title, String description, Double price,
                                         LocalDateTime meetingDate) {
         Client client = clientService.createClient(googleId, name, email, phone, profilePicture);
-        Project project = projectService.createProject(title, description, price, client, planId);
+        Project project = projectService.createProject(title, description, price, client, planId, serviceId);
 
         Meeting meeting = new Meeting();
         meeting.setClient(client);

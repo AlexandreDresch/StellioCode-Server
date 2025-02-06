@@ -7,6 +7,7 @@ import com.stelliocode.backend.entity.*;
 import com.stelliocode.backend.repository.DeveloperProjectsRepository;
 import com.stelliocode.backend.repository.PlanRepository;
 import com.stelliocode.backend.repository.ProjectRepository;
+import com.stelliocode.backend.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,11 +28,13 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final PlanRepository planRepository;
     private final DeveloperProjectsRepository developerProjectsRepository;
+    private final ServiceRepository serviceRepository;
 
-    public Project createProject(String title, String description, Double price, Client client, UUID planId) {
+    public Project createProject(String title, String description, Double price, Client client, UUID planId, UUID serviceId) {
         Plan plan = planRepository.findById(planId)
-                .orElseThrow(() -> new IllegalArgumentException("Plan not found"));
-
+                .orElseThrow(() -> new IllegalArgumentException("Plan not found."));
+        com.stelliocode.backend.entity.Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new IllegalArgumentException("Service not found."));
         Project project = new Project();
         project.setTitle(title);
         project.setDescription(description);
@@ -39,6 +42,7 @@ public class ProjectService {
         project.setStatus(ProjectStatus.PENDING);
         project.setClient(client);
         project.setPlan(plan);
+        project.setService(service);
         return projectRepository.save(project);
     }
 
@@ -68,6 +72,7 @@ public class ProjectService {
                             project.getStatus().toString(),
                             project.getPrice(),
                             project.getPlan().getName(),
+                            project.getService().getTitle(),
                             project.getClient().getId().toString(),
                             project.getClient().getName(),
                             project.getClient().getEmail(),

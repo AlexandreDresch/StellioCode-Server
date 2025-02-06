@@ -26,6 +26,9 @@ public class CreateMeetingRequestDTO {
     @NotNull
     private UUID planId;
 
+    @NotNull
+    private UUID serviceId;
+
     @NotBlank
     private String title;
 

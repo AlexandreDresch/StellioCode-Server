@@ -33,9 +33,10 @@ public class AdminDashboardController {
     private final ProjectService projectService;
     private final FeaturedProjectService featuredProjectService;
     private final AuthenticationService authenticationService;
+    private final ServiceService serviceService;
 
 
-    public AdminDashboardController(SummaryService summaryService, DeveloperService developerService, PlanService planService, FaqService faqService, ProjectService projectService, FeaturedProjectService featuredProjectService, AuthenticationService authenticationService) {
+    public AdminDashboardController(SummaryService summaryService, DeveloperService developerService, PlanService planService, FaqService faqService, ProjectService projectService, FeaturedProjectService featuredProjectService, AuthenticationService authenticationService, ServiceService serviceService) {
         this.summaryService = summaryService;
         this.developerService = developerService;
         this.planService = planService;
@@ -43,6 +44,7 @@ public class AdminDashboardController {
         this.projectService = projectService;
         this.featuredProjectService = featuredProjectService;
         this.authenticationService = authenticationService;
+        this.serviceService = serviceService;
     }
 
     @GetMapping("/summary")
@@ -207,6 +209,22 @@ public class AdminDashboardController {
     @DeleteMapping("/featured-projects/{id}")
     public ResponseEntity<Void> deleteFeaturedProject(@PathVariable("id") UUID projectId) {
         featuredProjectService.deleteFeaturedProject(projectId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/services")
+    public ResponseEntity<ServiceResponseDTO> createService(@Valid @RequestBody CreateServiceRequestDTO request) {
+        return ResponseEntity.ok(serviceService.createService(request));
+    }
+
+    @PutMapping("/services/{id}")
+    public ResponseEntity<ServiceResponseDTO> updateService(@PathVariable UUID id, @Valid @RequestBody CreateServiceRequestDTO request) {
+        return ResponseEntity.ok(serviceService.updateService(id, request));
+    }
+
+    @DeleteMapping("/services/{id}")
+    public ResponseEntity<Void> deleteService(@PathVariable UUID id) {
+        serviceService.deleteService(id);
         return ResponseEntity.noContent().build();
     }
 }

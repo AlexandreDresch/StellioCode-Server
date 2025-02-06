@@ -17,6 +17,7 @@ public class InternalProjectDetailsResponseDTO {
     private String status;
     private BigDecimal price;
     private String planName;
+    private String serviceName;
     private String clientId;
     private String clientName;
     private String clientEmail;

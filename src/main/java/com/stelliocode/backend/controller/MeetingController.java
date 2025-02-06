@@ -30,6 +30,7 @@ public class MeetingController {
                 request.getPhone(),
                 request.getProfilePicture(),
                 request.getPlanId(),
+                request.getServiceId(),
                 request.getTitle(),
                 request.getDescription(),
                 request.getPrice(),
