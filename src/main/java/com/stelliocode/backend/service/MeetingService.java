@@ -4,6 +4,10 @@ import com.stelliocode.backend.entity.*;
 import com.stelliocode.backend.repository.MeetingRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,5 +35,19 @@ public class MeetingService {
         meeting.setScheduledAt(meetingDate.toString());
         meeting.setStatus("pending");
         return meetingRepository.save(meeting);
+    }
+
+    public Page<Meeting> getAllMeetings(String status, LocalDateTime scheduledAt, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("scheduledAt").descending());
+
+        if (status != null && scheduledAt != null) {
+            return meetingRepository.findByStatusAndScheduledAt(status, scheduledAt, pageable);
+        } else if (status != null) {
+            return meetingRepository.findByStatus(status, pageable);
+        } else if (scheduledAt != null) {
+            return meetingRepository.findByScheduledAt(scheduledAt, pageable);
+        }
+
+        return meetingRepository.findAll(pageable);
     }
 }

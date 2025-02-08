@@ -3,6 +3,7 @@ package com.stelliocode.backend.controller;
 import com.stelliocode.backend.dto.*;
 import com.stelliocode.backend.entity.DeveloperProject;
 import com.stelliocode.backend.entity.Faq;
+import com.stelliocode.backend.entity.Meeting;
 import com.stelliocode.backend.entity.Plan;
 import com.stelliocode.backend.service.*;
 import jakarta.validation.Valid;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
@@ -18,9 +20,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/admin/dashboard")
@@ -34,9 +40,10 @@ public class AdminDashboardController {
     private final FeaturedProjectService featuredProjectService;
     private final AuthenticationService authenticationService;
     private final ServiceService serviceService;
+    private final MeetingService meetingService;
 
 
-    public AdminDashboardController(SummaryService summaryService, DeveloperService developerService, PlanService planService, FaqService faqService, ProjectService projectService, FeaturedProjectService featuredProjectService, AuthenticationService authenticationService, ServiceService serviceService) {
+    public AdminDashboardController(SummaryService summaryService, DeveloperService developerService, PlanService planService, FaqService faqService, ProjectService projectService, FeaturedProjectService featuredProjectService, AuthenticationService authenticationService, ServiceService serviceService, MeetingService meetingService) {
         this.summaryService = summaryService;
         this.developerService = developerService;
         this.planService = planService;
@@ -45,6 +52,7 @@ public class AdminDashboardController {
         this.featuredProjectService = featuredProjectService;
         this.authenticationService = authenticationService;
         this.serviceService = serviceService;
+        this.meetingService = meetingService;
     }
 
     @GetMapping("/summary")
@@ -66,7 +74,7 @@ public class AdminDashboardController {
 
         PagedModel<EntityModel<DeveloperResponseDTO>> pagedModel = assembler.toModel(developers);
 
-        pagedModel.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(AdminDashboardController.class)
+        pagedModel.add(linkTo(methodOn(AdminDashboardController.class)
                         .getDevelopers(name, status, page, size, assembler))
                 .withSelfRel());
 
@@ -136,6 +144,26 @@ public class AdminDashboardController {
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(400).body(new BaseResponseDTO(ex.getMessage(), false));
         }
+    }
+
+    @GetMapping("meetings")
+    public CollectionModel<EntityModel<Meeting>> getAllMeetings(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) LocalDateTime scheduledAt,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<Meeting> meetings = meetingService.getAllMeetings(status, scheduledAt, page, size);
+
+        var meetingModels = meetings.getContent().stream()
+                .map(meeting -> EntityModel.of(meeting,
+                        linkTo(methodOn(AdminDashboardController.class).getAllMeetings(status, scheduledAt, page, size)).withSelfRel()
+                ))
+                .toList();
+
+        return CollectionModel.of(meetingModels,
+                linkTo(methodOn(AdminDashboardController.class).getAllMeetings(status, scheduledAt, page, size)).withSelfRel()
+        );
     }
 
     @PostMapping("/plans")
