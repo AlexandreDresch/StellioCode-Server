@@ -14,7 +14,6 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,9 +55,8 @@ public class AdminDashboardController {
     }
 
     @GetMapping("/summary")
-    public ResponseEntity<SummaryDTO> getSummary() {
-        SummaryDTO summary = summaryService.getSummary();
-        return ResponseEntity.ok(summary);
+    public ResponseEntity<SummaryDTO> getDashboardSummary() {
+        return ResponseEntity.ok(summaryService.getSummary());
     }
 
     @GetMapping("/developers")

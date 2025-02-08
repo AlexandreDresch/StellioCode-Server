@@ -1,40 +1,62 @@
 package com.stelliocode.backend.service;
 
 import com.stelliocode.backend.dto.SummaryDTO;
+import com.stelliocode.backend.dto.SummaryMetricDTO;
+import com.stelliocode.backend.repository.ClientRepository;
 import com.stelliocode.backend.repository.UserRepository;
 import com.stelliocode.backend.repository.ProjectRepository;
 import com.stelliocode.backend.repository.PaymentRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.YearMonth;
 
 @Service
 public class SummaryService {
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final PaymentRepository paymentRepository;
+    private final ClientRepository clientRepository;
 
-    public SummaryService(UserRepository userRepository, ProjectRepository projectRepository, PaymentRepository paymentRepository) {
+    public SummaryService(UserRepository userRepository, ProjectRepository projectRepository, PaymentRepository paymentRepository, ClientRepository clientRepository) {
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
         this.paymentRepository = paymentRepository;
+        this.clientRepository = clientRepository;
     }
 
     public SummaryDTO getSummary() {
-        Long totalUsers = userRepository.countAllUsers();
-        Long totalProjects = projectRepository.countAllProjects();
-        Long completedProjects = projectRepository.countCompletedProjects();
-        Long pendingProjects = projectRepository.countPendingProjects();
-        Double totalRevenue = paymentRepository.calculateTotalRevenue();
+        LocalDate firstDayCurrentMonth = YearMonth.now().atDay(1);
+        LocalDate firstDayPreviousMonth = YearMonth.now().minusMonths(1).atDay(1);
 
-        LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
-        LocalDateTime endOfMonth = LocalDate.now().withDayOfMonth(LocalDate.now().lengthOfMonth()).atTime(23, 59, 59);
+        int revenueCurrent = projectRepository.getTotalRevenueByMonth(firstDayCurrentMonth);
+        int revenuePrevious = projectRepository.getTotalRevenueByMonth(firstDayPreviousMonth);
+        SummaryMetricDTO totalRevenue = calculateChange(revenueCurrent, revenuePrevious);
 
-        Integer newClients = userRepository.countNewUsers(startOfMonth, endOfMonth);
-        Integer newProjects = projectRepository.countNewProjects(startOfMonth, endOfMonth);
+        int completedProjectsCurrent = projectRepository.getCompletedProjectsByMonth(firstDayCurrentMonth);
+        int completedProjectsPrevious = projectRepository.getCompletedProjectsByMonth(firstDayPreviousMonth);
+        SummaryMetricDTO completedProjects = calculateChange(completedProjectsCurrent, completedProjectsPrevious);
 
-        return new SummaryDTO(totalUsers, totalProjects, completedProjects, pendingProjects, totalRevenue, newClients, newProjects);
+        int newProjectsCurrent = projectRepository.getNewProjectsByMonth(firstDayCurrentMonth);
+        int newProjectsPrevious = projectRepository.getNewProjectsByMonth(firstDayPreviousMonth);
+        SummaryMetricDTO newProjects = calculateChange(newProjectsCurrent, newProjectsPrevious);
+
+        int newClientsCurrent = clientRepository.getNewClientsByMonth(firstDayCurrentMonth);
+        int newClientsPrevious = clientRepository.getNewClientsByMonth(firstDayPreviousMonth);
+        SummaryMetricDTO newClients = calculateChange(newClientsCurrent, newClientsPrevious);
+
+        return new SummaryDTO(totalRevenue, completedProjects, newProjects, newClients);
+    }
+
+    private SummaryMetricDTO calculateChange(int current, int previous) {
+        double change;
+
+        if (previous == 0) {
+            change = (current == 0) ? 0.0 : 100.0;
+        } else {
+            change = ((double) (current - previous) / previous) * 100;
+        }
+
+        return new SummaryMetricDTO(current, previous, change);
     }
 }
