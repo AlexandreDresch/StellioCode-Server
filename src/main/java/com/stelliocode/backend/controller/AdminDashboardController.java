@@ -1,10 +1,7 @@
 package com.stelliocode.backend.controller;
 
 import com.stelliocode.backend.dto.*;
-import com.stelliocode.backend.entity.DeveloperProject;
-import com.stelliocode.backend.entity.Faq;
-import com.stelliocode.backend.entity.Meeting;
-import com.stelliocode.backend.entity.Plan;
+import com.stelliocode.backend.entity.*;
 import com.stelliocode.backend.service.*;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -131,6 +128,15 @@ public class AdminDashboardController {
         }
     }
 
+    @PutMapping("/projects/{projectId}/status")
+    public ResponseEntity<UpdateProjectStatusResponseDTO> updateProjectStatus(
+            @PathVariable UUID projectId,
+            @RequestBody @Valid UpdateProjectStatusDTO request
+    ) {
+        UpdateProjectStatusResponseDTO updatedProject = projectService.updateProjectStatus(projectId, request.status());
+        return ResponseEntity.ok(updatedProject);
+    }
+
     @DeleteMapping("/projects/{projectId}/developers")
     public ResponseEntity<BaseResponseDTO> removeDevelopersFromProject(
             @PathVariable("projectId") UUID projectId,
@@ -144,7 +150,7 @@ public class AdminDashboardController {
         }
     }
 
-    @GetMapping("meetings")
+    @GetMapping("/meetings")
     public CollectionModel<EntityModel<Meeting>> getAllMeetings(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) LocalDateTime scheduledAt,
@@ -162,6 +168,15 @@ public class AdminDashboardController {
         return CollectionModel.of(meetingModels,
                 linkTo(methodOn(AdminDashboardController.class).getAllMeetings(status, scheduledAt, page, size)).withSelfRel()
         );
+    }
+
+    @PutMapping("/meetings/{id}/status")
+    public ResponseEntity<Meeting> updateMeetingStatus(
+            @PathVariable UUID id,
+            @RequestBody @Valid UpdateMeetingStatusDTO request
+    ) {
+        Meeting updatedMeeting = meetingService.updateMeetingStatus(id, request.status());
+        return ResponseEntity.ok(updatedMeeting);
     }
 
     @PostMapping("/plans")

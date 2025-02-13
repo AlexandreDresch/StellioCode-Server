@@ -3,6 +3,7 @@ package com.stelliocode.backend.service;
 import com.stelliocode.backend.entity.*;
 import com.stelliocode.backend.repository.MeetingRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -49,5 +50,14 @@ public class MeetingService {
         }
 
         return meetingRepository.findAll(pageable);
+    }
+
+    @Transactional
+    public Meeting updateMeetingStatus(UUID meetingId, MeetingStatus newStatus) {
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .orElseThrow(() -> new EntityNotFoundException("Meeting not found."));
+
+        meeting.setStatus(String.valueOf(newStatus));
+        return meetingRepository.save(meeting);
     }
 }

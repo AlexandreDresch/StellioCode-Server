@@ -3,11 +3,13 @@ package com.stelliocode.backend.service;
 import com.stelliocode.backend.controller.AdminDashboardController;
 import com.stelliocode.backend.dto.DeveloperDTO;
 import com.stelliocode.backend.dto.InternalProjectDetailsResponseDTO;
+import com.stelliocode.backend.dto.UpdateProjectStatusResponseDTO;
 import com.stelliocode.backend.entity.*;
 import com.stelliocode.backend.repository.DeveloperProjectsRepository;
 import com.stelliocode.backend.repository.PlanRepository;
 import com.stelliocode.backend.repository.ProjectRepository;
 import com.stelliocode.backend.repository.ServiceRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -44,6 +47,22 @@ public class ProjectService {
         project.setPlan(plan);
         project.setService(service);
         return projectRepository.save(project);
+    }
+
+    @Transactional
+    public UpdateProjectStatusResponseDTO updateProjectStatus(UUID projectId, ProjectStatus newStatus) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found."));
+
+        project.setStatus(newStatus);
+
+        projectRepository.save(project);
+
+        return new UpdateProjectStatusResponseDTO(
+                project.getId(),
+                project.getTitle(),
+                project.getStatus().toString()
+        );
     }
 
     public PagedModel<InternalProjectDetailsResponseDTO> getAllProjectsWithDevelopers(int page, int size) {
