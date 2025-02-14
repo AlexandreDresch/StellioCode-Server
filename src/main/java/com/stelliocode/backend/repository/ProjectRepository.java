@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -26,6 +28,18 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
 
     @Query("SELECT p FROM Project p JOIN DeveloperProject dp ON p.id = dp.project.id WHERE dp.developer.id = :developerId AND p.status = :status")
     Page<Project> findByDeveloperIdAndStatus(@Param("developerId") UUID developerId, @Param("status") String status, Pageable pageable);
+
+    @Query("""
+    SELECT FUNCTION('TO_CHAR', p.createdAt, 'YYYY-MM'),
+           SUM(CASE WHEN p.status = 'IN_PROGRESS' THEN 1 ELSE 0 END),
+           SUM(CASE WHEN p.status = 'COMPLETED' THEN 1 ELSE 0 END)
+    FROM Project p
+    WHERE p.createdAt >= :startDate
+    GROUP BY FUNCTION('TO_CHAR', p.createdAt, 'YYYY-MM')
+    ORDER BY FUNCTION('TO_CHAR', p.createdAt, 'YYYY-MM')
+""")
+    List<Object[]> getProjectsStatsLast6Months(@Param("startDate") LocalDateTime startDate);
+
 
     Page<Project> findAll(Pageable pageable);
 }

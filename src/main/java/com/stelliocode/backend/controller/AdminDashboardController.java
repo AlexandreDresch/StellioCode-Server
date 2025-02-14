@@ -230,6 +230,11 @@ public class AdminDashboardController {
         return ResponseEntity.ok(projects);
     }
 
+    @GetMapping("/projects/stats/last-6-months")
+    public List<ProjectStatsDTO> getProjectsStatsLast6Months() {
+        return projectService.getProjectsStatsLast6Months();
+    }
+
     @PostMapping("/featured-projects")
     public ResponseEntity<FeaturedProjectDTO> createFeaturedProject(
             @Valid @ModelAttribute CreateFeaturedProjectRequestDTO requestDTO,

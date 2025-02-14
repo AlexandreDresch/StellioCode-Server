@@ -3,6 +3,7 @@ package com.stelliocode.backend.service;
 import com.stelliocode.backend.controller.AdminDashboardController;
 import com.stelliocode.backend.dto.DeveloperDTO;
 import com.stelliocode.backend.dto.InternalProjectDetailsResponseDTO;
+import com.stelliocode.backend.dto.ProjectStatsDTO;
 import com.stelliocode.backend.dto.UpdateProjectStatusResponseDTO;
 import com.stelliocode.backend.entity.*;
 import com.stelliocode.backend.repository.DeveloperProjectsRepository;
@@ -20,7 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -114,5 +119,32 @@ public class ProjectService {
                         WebMvcLinkBuilder.methodOn(AdminDashboardController.class).getAllProjects(page, size)
                 ).withSelfRel()
         );
+    }
+
+    public List<ProjectStatsDTO> getProjectsStatsLast6Months() {
+        LocalDate today = LocalDate.now();
+        LocalDate startDate = today.minusMonths(5).withDayOfMonth(1);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+        List<String> last6Months = new ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            last6Months.add(startDate.plusMonths(i).format(formatter));
+        }
+
+        List<Object[]> rawData = projectRepository.getProjectsStatsLast6Months(startDate.atStartOfDay());
+
+        Map<String, ProjectStatsDTO> statsMap = rawData.stream()
+                .collect(Collectors.toMap(
+                        obj -> (String) obj[0],
+                        obj -> new ProjectStatsDTO(
+                                (String) obj[0],
+                                ((Number) obj[1]).longValue(),
+                                ((Number) obj[2]).longValue()
+                        )
+                ));
+
+        return last6Months.stream()
+                .map(month -> statsMap.getOrDefault(month, new ProjectStatsDTO(month, 0L, 0L)))
+                .collect(Collectors.toList());
     }
 }
