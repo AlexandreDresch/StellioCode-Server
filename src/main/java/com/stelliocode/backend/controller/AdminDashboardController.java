@@ -87,6 +87,11 @@ public class AdminDashboardController {
         return ResponseEntity.ok(projects);
     }
 
+    @GetMapping("/developers/stats")
+    public DeveloperStatsDTO getDeveloperStats() {
+        return developerService.getDeveloperStats();
+    }
+
     @PatchMapping("/developers/{id}/approve")
     public ResponseEntity<BaseResponseDTO> approveDeveloper(
             @PathVariable("id") UUID developerId,

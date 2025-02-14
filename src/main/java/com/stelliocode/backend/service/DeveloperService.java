@@ -2,6 +2,7 @@ package com.stelliocode.backend.service;
 
 import com.stelliocode.backend.assembler.ProjectModelAssembler;
 import com.stelliocode.backend.dto.DeveloperResponseDTO;
+import com.stelliocode.backend.dto.DeveloperStatsDTO;
 import com.stelliocode.backend.dto.ProjectWithProgressResponseDTO;
 import com.stelliocode.backend.entity.DeveloperProject;
 import com.stelliocode.backend.entity.Project;
@@ -22,10 +23,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -142,5 +140,25 @@ public class DeveloperService {
 
             developerProjectRepository.delete(association);
         }
+    }
+
+    public DeveloperStatsDTO getDeveloperStats() {
+        long totalDevelopers = userRepository.countTotalDevelopers();
+        List<Object[]> developersByStatusRaw = userRepository.countDevelopersByStatus();
+
+        String[] possibleStatuses = {"pending", "approved", "rejected"};
+        Map<String, Long> developersByStatus = new HashMap<>();
+
+        for (String status : possibleStatuses) {
+            developersByStatus.put(status, 0L);
+        }
+
+        for (Object[] row : developersByStatusRaw) {
+            String status = (String) row[0];
+            Long count = (Long) row[1];
+            developersByStatus.put(status, count);
+        }
+
+        return new DeveloperStatsDTO(totalDevelopers, developersByStatus);
     }
 }
