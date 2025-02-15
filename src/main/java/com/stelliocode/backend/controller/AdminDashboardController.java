@@ -156,22 +156,24 @@ public class AdminDashboardController {
     }
 
     @GetMapping("/meetings")
-    public CollectionModel<EntityModel<Meeting>> getAllMeetings(
+    public CollectionModel<EntityModel<MeetingResponseDTO>> getAllMeetings(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) LocalDateTime scheduledAt,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Page<Meeting> meetings = meetingService.getAllMeetings(status, scheduledAt, page, size);
+        Page<MeetingResponseDTO> meetings = meetingService.getAllMeetings(status, scheduledAt, page, size);
 
-        var meetingModels = meetings.getContent().stream()
+        List<EntityModel<MeetingResponseDTO>> meetingModels = meetings.getContent().stream()
                 .map(meeting -> EntityModel.of(meeting,
-                        linkTo(methodOn(AdminDashboardController.class).getAllMeetings(status, scheduledAt, page, size)).withSelfRel()
+                        linkTo(methodOn(AdminDashboardController.class)
+                                .getAllMeetings(status, scheduledAt, page, size)).withSelfRel()
                 ))
                 .toList();
 
         return CollectionModel.of(meetingModels,
-                linkTo(methodOn(AdminDashboardController.class).getAllMeetings(status, scheduledAt, page, size)).withSelfRel()
+                linkTo(methodOn(AdminDashboardController.class)
+                        .getAllMeetings(status, scheduledAt, page, size)).withSelfRel()
         );
     }
 

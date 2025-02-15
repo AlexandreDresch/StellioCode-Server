@@ -1,19 +1,19 @@
 package com.stelliocode.backend.service;
 
+import com.stelliocode.backend.dto.MeetingResponseDTO;
 import com.stelliocode.backend.entity.*;
 import com.stelliocode.backend.repository.MeetingRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,18 +38,26 @@ public class MeetingService {
         return meetingRepository.save(meeting);
     }
 
-    public Page<Meeting> getAllMeetings(String status, LocalDateTime scheduledAt, int page, int size) {
+    public Page<MeetingResponseDTO> getAllMeetings(String status, LocalDateTime scheduledAt, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("scheduledAt").descending());
+        Page<Meeting> meetingsPage;
 
         if (status != null && scheduledAt != null) {
-            return meetingRepository.findByStatusAndScheduledAt(status, scheduledAt, pageable);
+            meetingsPage = meetingRepository.findByStatusAndScheduledAt(status, scheduledAt, pageable);
         } else if (status != null) {
-            return meetingRepository.findByStatus(status, pageable);
+            meetingsPage = meetingRepository.findByStatus(status, pageable);
         } else if (scheduledAt != null) {
-            return meetingRepository.findByScheduledAt(scheduledAt, pageable);
+            meetingsPage = meetingRepository.findByScheduledAt(scheduledAt, pageable);
+        } else {
+            meetingsPage = meetingRepository.findAll(pageable);
         }
 
-        return meetingRepository.findAll(pageable);
+        List<MeetingResponseDTO> meetingsDTO = meetingsPage.getContent()
+                .stream()
+                .map(MeetingResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(meetingsDTO, pageable, meetingsPage.getTotalElements());
     }
 
     @Transactional
