@@ -178,11 +178,20 @@ public class AdminDashboardController {
     }
 
     @PutMapping("/meetings/{id}/status")
-    public ResponseEntity<Meeting> updateMeetingStatus(
+    public ResponseEntity<UpdatedMeetingResponseDTO> updateMeetingStatus(
             @PathVariable UUID id,
             @RequestBody @Valid UpdateMeetingStatusDTO request
     ) {
-        Meeting updatedMeeting = meetingService.updateMeetingStatus(id, request.status());
+        UpdatedMeetingResponseDTO updatedMeeting = meetingService.updateMeetingStatus(id, request.status());
+        return ResponseEntity.ok(updatedMeeting);
+    }
+
+    @PutMapping("/meetings/{id}/date")
+    public ResponseEntity<UpdatedMeetingResponseDTO> updateMeetingDate(
+            @PathVariable UUID id,
+            @RequestBody @Valid UpdateMeetingDateDTO request
+    ) {
+        UpdatedMeetingResponseDTO updatedMeeting = meetingService.updateMeetingDate(id, request.date());
         return ResponseEntity.ok(updatedMeeting);
     }
 

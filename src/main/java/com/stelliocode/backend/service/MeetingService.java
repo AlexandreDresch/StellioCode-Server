@@ -1,6 +1,7 @@
 package com.stelliocode.backend.service;
 
 import com.stelliocode.backend.dto.MeetingResponseDTO;
+import com.stelliocode.backend.dto.UpdatedMeetingResponseDTO;
 import com.stelliocode.backend.entity.*;
 import com.stelliocode.backend.repository.MeetingRepository;
 
@@ -61,11 +62,32 @@ public class MeetingService {
     }
 
     @Transactional
-    public Meeting updateMeetingStatus(UUID meetingId, MeetingStatus newStatus) {
+    public UpdatedMeetingResponseDTO updateMeetingStatus(UUID meetingId, MeetingStatus newStatus) {
         Meeting meeting = meetingRepository.findById(meetingId)
                 .orElseThrow(() -> new EntityNotFoundException("Meeting not found."));
 
         meeting.setStatus(String.valueOf(newStatus));
-        return meetingRepository.save(meeting);
+        meetingRepository.save(meeting);
+
+        return new UpdatedMeetingResponseDTO(
+                meeting.getId().toString(),
+                meeting.getStatus(),
+                meeting.getScheduledAt()
+        );
+    }
+
+    @Transactional
+    public UpdatedMeetingResponseDTO updateMeetingDate(UUID meetingId, String date) {
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .orElseThrow(() -> new EntityNotFoundException("Meeting not found."));
+
+        meeting.setScheduledAt(date);
+        meetingRepository.save(meeting);
+
+        return new UpdatedMeetingResponseDTO(
+                meeting.getId().toString(),
+                meeting.getStatus(),
+                meeting.getScheduledAt()
+        );
     }
 }
