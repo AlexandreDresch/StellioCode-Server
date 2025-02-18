@@ -42,4 +42,18 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
 
 
     Page<Project> findAll(Pageable pageable);
+
+    @Query("""
+    SELECT dp.project.id FROM DeveloperProject dp
+    WHERE dp.developer.id = :developerId 
+    AND dp.project.status = 'in_progress'
+    ORDER BY dp.assignedAt DESC
+""")
+    List<UUID> findCurrentProjectIdsByDeveloperId(@Param("developerId") UUID developerId);
+
+    @Query("""
+        SELECT COUNT(dp) FROM DeveloperProject dp
+        WHERE dp.developer.id = :developerId
+    """)
+    int countByDeveloperId(@Param("developerId") UUID developerId);
 }

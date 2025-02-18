@@ -106,6 +106,12 @@ public class AdminDashboardController {
         }
     }
 
+    @GetMapping("/developers/approved")
+    public ResponseEntity<List<ApprovedDeveloperResponseDTO>> getApprovedDevelopers() {
+        List<ApprovedDeveloperResponseDTO> developers = developerService.getApprovedDevelopers();
+        return ResponseEntity.ok(developers);
+    }
+
     @DeleteMapping("/developers/{developerId}")
     public ResponseEntity<BaseResponseDTO> deleteDeveloper(
             @PathVariable("developerId") UUID developerId

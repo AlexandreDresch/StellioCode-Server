@@ -1,6 +1,7 @@
 package com.stelliocode.backend.service;
 
 import com.stelliocode.backend.assembler.ProjectModelAssembler;
+import com.stelliocode.backend.dto.ApprovedDeveloperResponseDTO;
 import com.stelliocode.backend.dto.DeveloperResponseDTO;
 import com.stelliocode.backend.dto.DeveloperStatsDTO;
 import com.stelliocode.backend.dto.ProjectWithProgressResponseDTO;
@@ -10,6 +11,7 @@ import com.stelliocode.backend.entity.ProjectRole;
 import com.stelliocode.backend.entity.User;
 import com.stelliocode.backend.repository.DeveloperProjectRepository;
 import com.stelliocode.backend.repository.ProjectRepository;
+import com.stelliocode.backend.repository.TechnologyRepository;
 import com.stelliocode.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +35,7 @@ public class DeveloperService {
     private final UserRepository userRepository;
     private final DeveloperProjectRepository developerProjectRepository;
     private final ProjectRepository projectRepository;
+    private final TechnologyRepository technologyRepository;
     private final ProjectModelAssembler projectModelAssembler;
     private final PagedResourcesAssembler<Project> pagedResourcesAssembler;
 
@@ -160,5 +164,26 @@ public class DeveloperService {
         }
 
         return new DeveloperStatsDTO(totalDevelopers, developersByStatus);
+    }
+
+    public List<ApprovedDeveloperResponseDTO> getApprovedDevelopers() {
+        List<User> developers = userRepository.findByRoleAndStatus("developer", "approved");
+
+        return developers.stream().map(dev -> {
+            List<UUID> currentProjectIds = projectRepository.findCurrentProjectIdsByDeveloperId(dev.getId());            int projectsCount = projectRepository.countByDeveloperId(dev.getId());
+            List<String> techStack = technologyRepository.findTechnologiesByUserId(dev.getId());
+
+            return new ApprovedDeveloperResponseDTO(
+                    dev.getId(),
+                    dev.getFullName(),
+                    dev.getEmail(),
+                    "https://i.pravatar.cc/150?img=" + dev.getId().hashCode() % 70,
+                    dev.getLevel(),
+                    currentProjectIds,
+                    projectsCount,
+                    "https://github.com/" + dev.getFullName().replaceAll(" ", "").toLowerCase(),
+                    techStack
+            );
+        }).collect(Collectors.toList());
     }
 }

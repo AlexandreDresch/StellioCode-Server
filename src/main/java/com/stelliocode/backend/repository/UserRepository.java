@@ -42,4 +42,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u.status, COUNT(u) FROM User u WHERE u.role = 'developer' GROUP BY u.status")
     List<Object[]> countDevelopersByStatus();
+
+    List<User> findByRoleAndStatus(String role, String status);
 }
