@@ -148,17 +148,13 @@ public class AdminDashboardController {
         return ResponseEntity.ok(updatedProject);
     }
 
-    @DeleteMapping("/projects/{projectId}/developers")
-    public ResponseEntity<BaseResponseDTO> removeDevelopersFromProject(
-            @PathVariable("projectId") UUID projectId,
-            @RequestBody DeveloperAssignmentRemovalRequestDTO request
+    @DeleteMapping("/projects/{projectId}/developers/{developerId}")
+    public ResponseEntity<String> removeDeveloperFromProject(
+            @PathVariable UUID projectId,
+            @PathVariable UUID developerId
     ) {
-        try {
-            developerService.removeDevelopersFromProject(request.getDeveloperIds(), projectId);
-            return ResponseEntity.ok(new BaseResponseDTO("Developer(s) removed from project successfully.", true));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(400).body(new BaseResponseDTO(ex.getMessage(), false));
-        }
+        projectService.removeDeveloperFromProject(projectId, developerId);
+        return ResponseEntity.ok("Developer removed from project successfully");
     }
 
     @GetMapping("/meetings")

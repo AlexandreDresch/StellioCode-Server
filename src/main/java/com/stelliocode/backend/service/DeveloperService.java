@@ -133,19 +133,6 @@ public class DeveloperService {
         return associations;
     }
 
-    @Transactional
-    public void removeDevelopersFromProject(List<UUID> developerIds, UUID projectId) {
-        projectRepository.findById(UUID.fromString(String.valueOf(projectId)))
-                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
-
-        for (UUID developerId : developerIds) {
-            DeveloperProject association = developerProjectRepository.findByDeveloperIdAndProjectId(developerId, projectId)
-                    .orElseThrow(() -> new IllegalArgumentException("Association not found for developer: " + developerId));
-
-            developerProjectRepository.delete(association);
-        }
-    }
-
     public DeveloperStatsDTO getDeveloperStats() {
         long totalDevelopers = userRepository.countTotalDevelopers();
         List<Object[]> developersByStatusRaw = userRepository.countDevelopersByStatus();

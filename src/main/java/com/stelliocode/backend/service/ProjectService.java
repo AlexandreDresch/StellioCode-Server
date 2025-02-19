@@ -147,4 +147,12 @@ public class ProjectService {
                 .map(month -> statsMap.getOrDefault(month, new ProjectStatsDTO(month, 0L, 0L)))
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void removeDeveloperFromProject(UUID projectId, UUID developerId) {
+        var developerProject = developerProjectRepository.findByDeveloperIdAndProjectId(developerId, projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Developer is not assigned to this project."));
+
+        developerProjectRepository.delete(developerProject);
+    }
 }
