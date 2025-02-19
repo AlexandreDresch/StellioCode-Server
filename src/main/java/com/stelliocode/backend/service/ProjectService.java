@@ -6,7 +6,7 @@ import com.stelliocode.backend.dto.InternalProjectDetailsResponseDTO;
 import com.stelliocode.backend.dto.ProjectStatsDTO;
 import com.stelliocode.backend.dto.UpdateProjectStatusResponseDTO;
 import com.stelliocode.backend.entity.*;
-import com.stelliocode.backend.repository.DeveloperProjectsRepository;
+import com.stelliocode.backend.repository.DeveloperProjectRepository;
 import com.stelliocode.backend.repository.PlanRepository;
 import com.stelliocode.backend.repository.ProjectRepository;
 import com.stelliocode.backend.repository.ServiceRepository;
@@ -35,7 +35,7 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final PlanRepository planRepository;
-    private final DeveloperProjectsRepository developerProjectsRepository;
+    private final DeveloperProjectRepository developerProjectRepository;
     private final ServiceRepository serviceRepository;
 
     public Project createProject(String title, String description, Double price, Client client, UUID planId, UUID serviceId) {
@@ -76,7 +76,7 @@ public class ProjectService {
 
         List<InternalProjectDetailsResponseDTO> projects = projectsPage.getContent().stream()
                 .map(project -> {
-                    List<DeveloperProjects> developerProjects = developerProjectsRepository.findByProjectId(project.getId());
+                    List<DeveloperProject> developerProjects = developerProjectRepository.findByProjectId(project.getId());
 
                     List<DeveloperDTO> developers = developerProjects.stream()
                             .map(dp -> {
@@ -84,7 +84,7 @@ public class ProjectService {
                                 return new DeveloperDTO(
                                         developer.getId().toString(),
                                         developer.getFullName(),
-                                        dp.getRoleInProject()
+                                        dp.getRoleInProject().toString()
                                 );
                             })
                             .collect(Collectors.toList());
