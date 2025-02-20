@@ -1,18 +1,12 @@
 package com.stelliocode.backend.service;
 
 import com.stelliocode.backend.assembler.ProjectModelAssembler;
-import com.stelliocode.backend.dto.ApprovedDeveloperResponseDTO;
-import com.stelliocode.backend.dto.DeveloperResponseDTO;
-import com.stelliocode.backend.dto.DeveloperStatsDTO;
-import com.stelliocode.backend.dto.ProjectWithProgressResponseDTO;
+import com.stelliocode.backend.dto.*;
 import com.stelliocode.backend.entity.DeveloperProject;
 import com.stelliocode.backend.entity.Project;
 import com.stelliocode.backend.entity.ProjectRole;
 import com.stelliocode.backend.entity.User;
-import com.stelliocode.backend.repository.DeveloperProjectRepository;
-import com.stelliocode.backend.repository.ProjectRepository;
-import com.stelliocode.backend.repository.TechnologyRepository;
-import com.stelliocode.backend.repository.UserRepository;
+import com.stelliocode.backend.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,7 +18,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,6 +29,7 @@ public class DeveloperService {
     private final DeveloperProjectRepository developerProjectRepository;
     private final ProjectRepository projectRepository;
     private final TechnologyRepository technologyRepository;
+    private final UserTechnologyRepository userTechnologyRepository;
     private final ProjectModelAssembler projectModelAssembler;
     private final PagedResourcesAssembler<Project> pagedResourcesAssembler;
 
@@ -75,22 +69,39 @@ public class DeveloperService {
         return pagedResourcesAssembler.toModel(projects, projectModelAssembler);
     }
 
-    public boolean updateDeveloperStatus(UUID developerId, String status) {
-        Optional<User> developerOpt = userRepository.findById(developerId);
+    public DeveloperByIdDTO getDeveloperById(UUID developerId) {
+        return userRepository.findById(developerId)
+                .map(developer -> {
+                    List<String> technologies = userTechnologyRepository.findTechnologiesByDeveloperId(developerId);
+                    return new DeveloperByIdDTO(
+                            developer.getId(),
+                            developer.getFullName(),
+                            developer.getPhone(),
+                            developer.getStatus(),
+                            developer.getLevel(),
+                            technologies
+                    );
+                })
+                .orElse(null);
+    }
 
-        if (developerOpt.isPresent()) {
-            User developer = developerOpt.get();
+    @Transactional
+    public boolean updateDeveloper(UUID developerId, DeveloperUpdateDTO updateDTO) {
+        var developerOptional = userRepository.findById(developerId);
 
-            developer.setStatus(status);
-            if ("approved".equalsIgnoreCase(status)) {
-                developer.setUpdatedAt(LocalDateTime.now());
-            }
-
-            userRepository.save(developer);
-            return true;
+        if (developerOptional.isEmpty()) {
+            return false;
         }
 
-        return false;
+        var developer = developerOptional.get();
+
+        Optional.ofNullable(updateDTO.getName()).ifPresent(developer::setFullName);
+        Optional.ofNullable(updateDTO.getPhone()).ifPresent(developer::setPhone);
+        Optional.ofNullable(updateDTO.getStatus()).ifPresent(developer::setStatus);
+        Optional.ofNullable(updateDTO.getLevel()).ifPresent(developer::setLevel);
+
+        userRepository.save(developer);
+        return true;
     }
 
     @Transactional

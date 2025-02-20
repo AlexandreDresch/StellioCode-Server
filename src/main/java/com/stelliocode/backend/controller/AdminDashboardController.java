@@ -76,6 +76,17 @@ public class AdminDashboardController {
         return pagedModel;
     }
 
+    @GetMapping("/developers/{id}")
+    public ResponseEntity<?> getDeveloperById(@PathVariable("id") UUID developerId) {
+        DeveloperByIdDTO developer = developerService.getDeveloperById(developerId);
+
+        if (developer != null) {
+            return ResponseEntity.ok(developer);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/developers/{developerId}/projects")
     public ResponseEntity<PagedModel<EntityModel<ProjectWithProgressResponseDTO>>> getDeveloperProjects(
             @PathVariable UUID developerId,
@@ -92,17 +103,17 @@ public class AdminDashboardController {
         return developerService.getDeveloperStats();
     }
 
-    @PatchMapping("/developers/{id}/approve")
-    public ResponseEntity<BaseResponseDTO> approveDeveloper(
+    @PatchMapping("/developers/{id}")
+    public ResponseEntity<BaseResponseDTO> updateDeveloper(
             @PathVariable("id") UUID developerId,
-            @RequestParam("status") String status
+            @RequestBody DeveloperUpdateDTO updateDTO
     ) {
-        boolean updated = developerService.updateDeveloperStatus(developerId, status);
+        boolean updated = developerService.updateDeveloper(developerId, updateDTO);
 
         if (updated) {
-            return ResponseEntity.ok(new BaseResponseDTO("Developer status updated successfully.", true));
+            return ResponseEntity.ok(new BaseResponseDTO("Developer updated successfully.", true));
         } else {
-            return ResponseEntity.status(400).body(new BaseResponseDTO("Failed to update developer status.", false));
+            return ResponseEntity.badRequest().body(new BaseResponseDTO("Failed to update developer.", false));
         }
     }
 
