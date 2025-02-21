@@ -109,9 +109,12 @@ public class DeveloperService {
         Optional<User> developerOpt = userRepository.findById(developerId);
 
         if (developerOpt.isPresent()) {
-            User developer = developerOpt.get();
+            long count = developerProjectRepository.countByDeveloperId(developerId);
+            if (count > 0) {
+                throw new IllegalStateException("You cannot delete a developer with projects associations.");
+            }
 
-            userRepository.delete(developer);
+            userRepository.deleteById(developerId);
             return true;
         }
 

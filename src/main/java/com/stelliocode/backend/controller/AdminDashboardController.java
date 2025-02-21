@@ -19,6 +19,7 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -124,15 +125,16 @@ public class AdminDashboardController {
     }
 
     @DeleteMapping("/developers/{developerId}")
-    public ResponseEntity<BaseResponseDTO> deleteDeveloper(
-            @PathVariable("developerId") UUID developerId
-    ) {
-        boolean removed = developerService.removeDeveloper(developerId);
-
-        if (removed) {
+    public ResponseEntity<BaseResponseDTO> deleteDeveloper(@PathVariable("developerId") UUID developerId) {
+        try {
+            boolean removed = developerService.removeDeveloper(developerId);
             return ResponseEntity.ok(new BaseResponseDTO("Developer removed successfully.", true));
-        } else {
-            return ResponseEntity.status(404).body(new BaseResponseDTO("Developer not found.", false));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new BaseResponseDTO("Cannot delete developer: " + e.getMessage(), false));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new BaseResponseDTO("Developer not found.", false));
         }
     }
 

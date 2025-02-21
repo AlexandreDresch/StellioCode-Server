@@ -45,8 +45,8 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
 
     @Query("""
     SELECT dp.project.id FROM DeveloperProject dp
-    WHERE dp.developer.id = :developerId 
-    AND dp.project.status = 'in_progress'
+    WHERE dp.developer.id = :developerId
+    AND dp.project.status = 'IN_PROGRESS'
     ORDER BY dp.assignedAt DESC
 """)
     List<UUID> findCurrentProjectIdsByDeveloperId(@Param("developerId") UUID developerId);

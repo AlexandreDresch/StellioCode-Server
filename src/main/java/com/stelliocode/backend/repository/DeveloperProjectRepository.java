@@ -17,9 +17,12 @@ public interface DeveloperProjectRepository extends JpaRepository<DeveloperProje
         SELECT COUNT(dp)
         FROM DeveloperProject dp
         JOIN dp.project p
-        WHERE dp.developer.id = :developerId AND p.status = 'in_progress'
+        WHERE dp.developer.id = :developerId AND p.status = 'IN_PROGRESS'
     """)
     long countActiveProjectsByDeveloperId(@Param("developerId") UUID developerId);
+
+    @Query("SELECT COUNT(dp) FROM DeveloperProject dp WHERE dp.developer.id = :developerId")
+    long countByDeveloperId(@Param("developerId") UUID developerId);
 
     List<DeveloperProject> findByProjectId(UUID projectId);
 

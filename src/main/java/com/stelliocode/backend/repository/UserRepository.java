@@ -22,9 +22,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Integer countNewUsers(LocalDateTime startDate, LocalDateTime endDate);
 
     @Query("""
-    SELECT u 
-    FROM User u 
-    WHERE u.role = :role 
+    SELECT u
+    FROM User u
+    WHERE u.role = :role
       AND (:name IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :name, '%')))
       AND (:status IS NULL OR u.status = :status)
 """)
@@ -44,4 +44,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<Object[]> countDevelopersByStatus();
 
     List<User> findByRoleAndStatus(String role, String status);
+
+    void deleteById(UUID id);
 }
