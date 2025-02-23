@@ -1,6 +1,5 @@
 package com.stelliocode.backend.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,8 +23,19 @@ public class Faq {
     @Column(nullable = false)
     private String answer;
 
-    @ManyToOne
-    @JoinColumn(name = "plan_id", nullable = false)
-    @JsonBackReference
-    private Plan plan;
+    @Column(name = "entity_type", nullable = false)
+    private String entityType;
+
+    @Column(name = "entity_id", nullable = false)
+    private UUID entityId;
+
+    public void associateWithPlan(Plan plan) {
+        this.entityType = "Plan";
+        this.entityId = plan.getId();
+    }
+
+    public void associateWithService(Service service) {
+        this.entityType = "Service";
+        this.entityId = service.getId();
+    }
 }

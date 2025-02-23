@@ -212,12 +212,12 @@ public class AdminDashboardController {
 
     @PostMapping("/plans")
     @ResponseStatus(HttpStatus.CREATED)
-    public Plan createPlan(@RequestBody Plan plan) {
+    public PlanResponseDTO createPlan(@RequestBody CreatePlanRequestDTO plan) {
         return planService.createPlan(plan);
     }
 
     @PutMapping("/plans/{id}")
-    public Plan updatePlan(@PathVariable UUID id, @RequestBody Plan updatedPlan) {
+    public PlanResponseDTO updatePlan(@PathVariable UUID id, @RequestBody CreatePlanRequestDTO updatedPlan) {
         return planService.updatePlan(id, updatedPlan);
     }
 
@@ -235,7 +235,7 @@ public class AdminDashboardController {
 
     @PostMapping("/plans/faq")
     public ResponseEntity<Faq> addFaq(@RequestBody CreateFaqRequestDTO faqRequest) {
-        Faq faq = faqService.addFaq(faqRequest.getPlanId(), faqRequest.getQuestion(), faqRequest.getAnswer());
+        Faq faq = faqService.addFaqToPlan(faqRequest.getPlanId(), faqRequest.getQuestion(), faqRequest.getAnswer());
         return ResponseEntity.ok(faq);
     }
 
@@ -292,6 +292,12 @@ public class AdminDashboardController {
     @PostMapping("/services")
     public ResponseEntity<ServiceResponseDTO> createService(@Valid @RequestBody CreateServiceRequestDTO request) {
         return ResponseEntity.ok(serviceService.createService(request));
+    }
+
+    @PostMapping("/services/faq")
+    public ResponseEntity<Faq> addFaqToService(@RequestBody CreateFaqRequestDTO faqRequest) {
+        Faq faq = faqService.addFaqToService(faqRequest.getPlanId(), faqRequest.getQuestion(), faqRequest.getAnswer());
+        return ResponseEntity.ok(faq);
     }
 
     @PutMapping("/services/{id}")

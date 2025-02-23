@@ -5,6 +5,7 @@ import com.stelliocode.backend.dto.ServiceResponseDTO;
 import com.stelliocode.backend.entity.Service;
 import com.stelliocode.backend.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -19,19 +20,14 @@ public class ServiceService {
 
     public List<ServiceResponseDTO> getAllServices() {
         return serviceRepository.findAll().stream()
-                .map(service -> new ServiceResponseDTO(
-                        service.getId(),
-                        service.getTitle(),
-                        service.getDescription(),
-                        service.getPrice()
-                ))
+                .map(this::mapToServiceResponseDTO)
                 .collect(Collectors.toList());
     }
 
     public ServiceResponseDTO getServiceById(UUID id) {
         Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Service not found."));
-        return new ServiceResponseDTO(service.getId(), service.getTitle(), service.getDescription(), service.getPrice());
+        return mapToServiceResponseDTO(service);
     }
 
     @Transactional
@@ -40,23 +36,29 @@ public class ServiceService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .price(request.getPrice())
+                .category(request.getCategory())
+                .duration(request.getDuration())
+                .isActive(request.isActive())
                 .build();
 
         Service savedService = serviceRepository.save(service);
-        return new ServiceResponseDTO(savedService.getId(), savedService.getTitle(), savedService.getDescription(), savedService.getPrice());
+        return mapToServiceResponseDTO(savedService);
     }
 
     @Transactional
     public ServiceResponseDTO updateService(UUID id, CreateServiceRequestDTO request) {
         Service service = serviceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Service not found"));
+                .orElseThrow(() -> new RuntimeException("Service not found."));
 
         service.setTitle(request.getTitle());
         service.setDescription(request.getDescription());
         service.setPrice(request.getPrice());
+        service.setCategory(request.getCategory());
+        service.setDuration(request.getDuration());
+        service.setActive(request.isActive());
 
-        serviceRepository.save(service);
-        return new ServiceResponseDTO(service.getId(), service.getTitle(), service.getDescription(), service.getPrice());
+        Service updatedService = serviceRepository.save(service);
+        return mapToServiceResponseDTO(updatedService);
     }
 
     @Transactional
@@ -65,5 +67,19 @@ public class ServiceService {
             throw new RuntimeException("Service not found.");
         }
         serviceRepository.deleteById(id);
+    }
+
+    private ServiceResponseDTO mapToServiceResponseDTO(Service service) {
+        return ServiceResponseDTO.builder()
+                .id(service.getId())
+                .title(service.getTitle())
+                .description(service.getDescription())
+                .price(service.getPrice())
+                .category(service.getCategory())
+                .duration(service.getDuration())
+                .isActive(service.isActive())
+                .createdAt(service.getCreatedAt())
+                .updatedAt(service.getUpdatedAt())
+                .build();
     }
 }

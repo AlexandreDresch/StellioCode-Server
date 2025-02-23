@@ -1,7 +1,6 @@
 package com.stelliocode.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,12 +32,19 @@ public class Plan {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String features;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal yearlyPrice;
 
-    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<Faq> faqs;
+    @Column(nullable = false, length = 50)
+    private String period;
+
+    @ElementCollection
+    @CollectionTable(name = "plan_features", joinColumns = @JoinColumn(name = "plan_id"))
+    @Column(name = "feature", nullable = false, columnDefinition = "TEXT")
+    private List<String> features = new ArrayList<>();
+
+    @Column(nullable = false)
+    private boolean isPopular;
 
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference

@@ -1,6 +1,7 @@
 package com.stelliocode.backend.controller;
 
-import com.stelliocode.backend.entity.Plan;
+import com.stelliocode.backend.dto.PlanResponseDTO;
+import com.stelliocode.backend.dto.PlanWithFaqsResponseDTO;
 import com.stelliocode.backend.service.PlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +18,13 @@ public class PlanController {
     private final PlanService planService;
 
     @GetMapping
-    public List<Plan> getAllPlans() {
+    public List<PlanResponseDTO> getAllPlans() {
         return planService.getAllPlans();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Plan> getPlanWithFaqs(@PathVariable UUID id) {
-        Plan plan = planService.getPlanWithFaqs(id);
+    public ResponseEntity<PlanWithFaqsResponseDTO> getPlanWithFaqs(@PathVariable UUID id) {
+        PlanWithFaqsResponseDTO plan = planService.getPlanWithFaqs(id);
         return ResponseEntity.ok(plan);
     }
 }
