@@ -161,6 +161,14 @@ public class AdminDashboardController {
         return ResponseEntity.ok(updatedProject);
     }
 
+    @PatchMapping("/projects/{projectId}")
+    public ResponseEntity<Project> updateProject(
+            @PathVariable UUID projectId,
+            @Valid @RequestBody UpdateProjectDTO updateProjectDTO) {
+        Project updatedProject = projectService.updateProject(projectId, updateProjectDTO);
+        return ResponseEntity.ok(updatedProject);
+    }
+
     @DeleteMapping("/projects/{projectId}/developers/{developerId}")
     public ResponseEntity<String> removeDeveloperFromProject(
             @PathVariable UUID projectId,

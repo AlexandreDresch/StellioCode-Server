@@ -64,6 +64,35 @@ public class ProjectService {
         );
     }
 
+    @Transactional
+    public Project updateProject(UUID projectId, UpdateProjectDTO updateProjectDTO) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found."));
+
+        if (updateProjectDTO.getTitle() != null) {
+            project.setTitle(updateProjectDTO.getTitle());
+        }
+        if (updateProjectDTO.getDescription() != null) {
+            project.setDescription(updateProjectDTO.getDescription());
+        }
+        if (updateProjectDTO.getStatus() != null) {
+            project.setStatus(updateProjectDTO.getStatus());
+        }
+        if (updateProjectDTO.getPrice() != null) {
+            project.setPrice(updateProjectDTO.getPrice());
+        }
+        if (updateProjectDTO.getPlanId() != null) {
+            project.setPlan(planRepository.findById(updateProjectDTO.getPlanId())
+                    .orElseThrow(() -> new RuntimeException("Plan not found.")));
+        }
+        if (updateProjectDTO.getServiceId() != null) {
+            project.setService(serviceRepository.findById(updateProjectDTO.getServiceId())
+                    .orElseThrow(() -> new RuntimeException("Service not found.")));
+        }
+
+        return projectRepository.save(project);
+    }
+
     public PagedModel<InternalProjectDetailsResponseDTO> getAllProjectsWithDevelopers(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Project> projectsPage = projectRepository.findAll(pageable);
