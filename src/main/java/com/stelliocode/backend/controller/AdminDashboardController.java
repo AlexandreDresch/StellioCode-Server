@@ -266,6 +266,17 @@ public class AdminDashboardController {
         return projectService.getProjectsStatsLast6Months();
     }
 
+    @GetMapping("/projects/{id}")
+    public ResponseEntity<?> getProjectById(@PathVariable("id") UUID projectId) {
+        ProjectByIdDTO project = projectService.getProjectById(projectId);
+
+        if (project != null) {
+            return ResponseEntity.ok(project);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PostMapping("/featured-projects")
     public ResponseEntity<FeaturedProjectDTO> createFeaturedProject(
             @Valid @ModelAttribute CreateFeaturedProjectRequestDTO requestDTO,

@@ -1,10 +1,7 @@
 package com.stelliocode.backend.service;
 
 import com.stelliocode.backend.controller.AdminDashboardController;
-import com.stelliocode.backend.dto.DeveloperDTO;
-import com.stelliocode.backend.dto.InternalProjectDetailsResponseDTO;
-import com.stelliocode.backend.dto.ProjectStatsDTO;
-import com.stelliocode.backend.dto.UpdateProjectStatusResponseDTO;
+import com.stelliocode.backend.dto.*;
 import com.stelliocode.backend.entity.*;
 import com.stelliocode.backend.repository.DeveloperProjectRepository;
 import com.stelliocode.backend.repository.PlanRepository;
@@ -23,10 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -146,6 +140,27 @@ public class ProjectService {
         return last6Months.stream()
                 .map(month -> statsMap.getOrDefault(month, new ProjectStatsDTO(month, 0L, 0L)))
                 .collect(Collectors.toList());
+    }
+
+    public ProjectByIdDTO getProjectById(UUID projectId) {
+        Optional<Project> project = projectRepository.findById(projectId);
+
+        if (!project.isPresent()) {
+            throw new EntityNotFoundException("Project not found.");
+        }
+
+        Project foundProject = project.get();
+
+        return new ProjectByIdDTO(
+                foundProject.getId(),
+                foundProject.getTitle(),
+                foundProject.getDescription(),
+                foundProject.getStatus().toString(),
+                foundProject.getPrice(),
+                foundProject.getPlan() != null ? foundProject.getPlan().getName() : null,
+                foundProject.getService() != null ? foundProject.getService().getTitle() : null,
+                foundProject.getClient() != null ? foundProject.getClient().getName() : null
+        );
     }
 
     @Transactional

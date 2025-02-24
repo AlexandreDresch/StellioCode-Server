@@ -16,9 +16,11 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
     @Query("SELECT " +
             "p.name AS planName, " +
             "COUNT(pr.id) AS totalContracts, " +
-            "SUM(pr.price) AS totalRevenue " +
-            "FROM Project pr " +
-            "JOIN pr.plan p " +
+            "COALESCE(SUM(CASE WHEN pr.status IN ('IN_PROGRESS', 'COMPLETED') THEN pr.price ELSE 0 END), 0) AS monthlyRevenue " +
+            "FROM Plan p " +
+            "LEFT JOIN Project pr ON p.id = pr.plan.id " +
+            "AND EXTRACT(MONTH FROM pr.createdAt) = EXTRACT(MONTH FROM CURRENT_DATE) " +
+            "AND pr.status IN ('IN_PROGRESS', 'COMPLETED') " +
             "GROUP BY p.name " +
             "ORDER BY totalContracts DESC")
     List<Map<String, Object>> findPlanStatistics();
