@@ -56,4 +56,10 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
         WHERE dp.developer.id = :developerId
     """)
     int countByDeveloperId(@Param("developerId") UUID developerId);
+
+    @Query("SELECT s.id, s.title, COUNT(p.id) AS projectCount " +
+            "FROM Service s " +
+            "LEFT JOIN Project p ON s.id = p.service.id AND p.createdAt >= :startOfYear " +
+            "GROUP BY s.id, s.title")
+    List<Object[]> countProjectsByServiceSince(@Param("startOfYear") LocalDateTime startOfYear);
 }

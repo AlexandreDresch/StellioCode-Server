@@ -308,6 +308,11 @@ public class AdminDashboardController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/services/stats")
+    public Map<String, Integer> getServiceProjectCounts() {
+        return serviceService.getServiceProjectCountsSinceStartOfYear();
+    }
+
     @PostMapping("/services")
     public ResponseEntity<ServiceResponseDTO> createService(@Valid @RequestBody CreateServiceRequestDTO request) {
         return ResponseEntity.ok(serviceService.createService(request));

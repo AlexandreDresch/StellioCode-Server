@@ -3,12 +3,16 @@ package com.stelliocode.backend.service;
 import com.stelliocode.backend.dto.CreateServiceRequestDTO;
 import com.stelliocode.backend.dto.ServiceResponseDTO;
 import com.stelliocode.backend.entity.Service;
+import com.stelliocode.backend.repository.ProjectRepository;
 import com.stelliocode.backend.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -17,6 +21,7 @@ import java.util.stream.Collectors;
 public class ServiceService {
 
     private final ServiceRepository serviceRepository;
+    private final ProjectRepository projectRepository;
 
     public List<ServiceResponseDTO> getAllServices() {
         return serviceRepository.findAll().stream()
@@ -67,6 +72,28 @@ public class ServiceService {
             throw new RuntimeException("Service not found.");
         }
         serviceRepository.deleteById(id);
+    }
+
+
+    public Map<String, Integer> getServiceProjectCountsSinceStartOfYear() {
+        LocalDateTime startOfYear = LocalDateTime.now().withDayOfYear(1).withHour(0).withMinute(0).withSecond(0);
+
+        List<Object[]> projectCounts = projectRepository.countProjectsByServiceSince(startOfYear);
+
+        Map<String, Integer> result = new HashMap<>();
+
+        for (Object[] row : projectCounts) {
+            String serviceTitle = (String) row[1];
+            Long count = (Long) row[2];
+            result.put(serviceTitle, count != null ? count.intValue() : 0);
+        }
+
+        List<Service> allServices = serviceRepository.findAll();
+        for (Service service : allServices) {
+            result.putIfAbsent(service.getTitle(), 0);
+        }
+
+        return result;
     }
 
     private ServiceResponseDTO mapToServiceResponseDTO(Service service) {
