@@ -3,6 +3,7 @@ package com.stelliocode.backend.service;
 import com.stelliocode.backend.dto.MeetingResponseDTO;
 import com.stelliocode.backend.dto.UpdatedMeetingResponseDTO;
 import com.stelliocode.backend.entity.*;
+import com.stelliocode.backend.repository.DeveloperProjectRepository;
 import com.stelliocode.backend.repository.MeetingRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -23,6 +24,8 @@ public class MeetingService {
     private final ClientService clientService;
     private final ProjectService projectService;
     private final MeetingRepository meetingRepository;
+    private final DeveloperProjectRepository developerProjectRepository;
+
 
     @Transactional
     public Meeting createInitialMeeting(String googleId, String name, String email, String phone, String profilePicture,
@@ -52,6 +55,24 @@ public class MeetingService {
         } else {
             meetingsPage = meetingRepository.findAll(pageable);
         }
+
+        List<MeetingResponseDTO> meetingsDTO = meetingsPage.getContent()
+                .stream()
+                .map(MeetingResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(meetingsDTO, pageable, meetingsPage.getTotalElements());
+    }
+
+    public Page<MeetingResponseDTO> getMeetingsByDeveloper(UUID developerId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("scheduledAt").descending());
+
+        List<UUID> projectIds = developerProjectRepository.findByDeveloperId(developerId)
+                .stream()
+                .map(dp -> dp.getProject().getId())
+                .toList();
+
+        Page<Meeting> meetingsPage = meetingRepository.findByProjectIdIn(projectIds, pageable);
 
         List<MeetingResponseDTO> meetingsDTO = meetingsPage.getContent()
                 .stream()

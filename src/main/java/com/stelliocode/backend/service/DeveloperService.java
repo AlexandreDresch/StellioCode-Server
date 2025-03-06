@@ -32,6 +32,7 @@ public class DeveloperService {
     private final UserTechnologyRepository userTechnologyRepository;
     private final ProjectModelAssembler projectModelAssembler;
     private final PagedResourcesAssembler<Project> pagedResourcesAssembler;
+    private final DeveloperTechnologyService developerTechnologyService;
 
 
     public Page<DeveloperResponseDTO> getDevelopers(String name, String status, Pageable pageable) {
@@ -99,6 +100,25 @@ public class DeveloperService {
         Optional.ofNullable(updateDTO.getPhone()).ifPresent(developer::setPhone);
         Optional.ofNullable(updateDTO.getStatus()).ifPresent(developer::setStatus);
         Optional.ofNullable(updateDTO.getLevel()).ifPresent(developer::setLevel);
+
+        userRepository.save(developer);
+        return true;
+    }
+
+    @Transactional
+    public boolean updateProfile(UUID developerId, UpdateProfileDTO updateDTO) {
+        var developerOptional = userRepository.findById(developerId);
+
+        if (developerOptional.isEmpty()) {
+            return false;
+        }
+
+        var developer = developerOptional.get();
+
+        Optional.ofNullable(updateDTO.getName()).ifPresent(developer::setFullName);
+        Optional.ofNullable(updateDTO.getPhone()).ifPresent(developer::setPhone);
+
+        developerTechnologyService.updateTechnologies(developer, updateDTO.getTechnologies());
 
         userRepository.save(developer);
         return true;
