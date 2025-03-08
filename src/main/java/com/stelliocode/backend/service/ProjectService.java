@@ -199,4 +199,8 @@ public class ProjectService {
 
         developerProjectRepository.delete(developerProject);
     }
+
+    public Optional<Project> getProjectByIdAndClientGoogleId(UUID projectId, String clientGoogleId) {
+        return projectRepository.findByIdAndClientGoogleId(projectId, clientGoogleId);
+    }
 }

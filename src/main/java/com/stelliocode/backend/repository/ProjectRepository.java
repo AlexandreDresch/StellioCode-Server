@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -62,4 +63,6 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
             "LEFT JOIN Project p ON s.id = p.service.id AND p.createdAt >= :startOfYear " +
             "GROUP BY s.id, s.title")
     List<Object[]> countProjectsByServiceSince(@Param("startOfYear") LocalDateTime startOfYear);
+
+    Optional<Project> findByIdAndClientGoogleId(UUID projectId, String clientGoogleId);
 }
