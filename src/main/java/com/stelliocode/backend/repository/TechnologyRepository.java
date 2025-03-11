@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -20,4 +21,6 @@ public interface TechnologyRepository extends JpaRepository<Technology, UUID> {
         WHERE ut.user.id = :userId
     """)
     List<String> findTechnologiesByUserId(@Param("userId") UUID userId);
+
+    List<Technology> findByNameIn(Set<String> names);
 }

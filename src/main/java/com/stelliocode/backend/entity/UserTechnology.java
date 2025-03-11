@@ -24,4 +24,9 @@ public class UserTechnology {
     @ManyToOne
     @JoinColumn(name = "technology_id", nullable = false)
     private Technology technology;
+
+    public UserTechnology(User user, Technology technology) {
+        this.user = user;
+        this.technology = technology;
+    }
 }

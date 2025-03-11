@@ -36,6 +36,11 @@ public class ProjectProgress {
     @Column(name = "description", nullable = false)
     private List<String> progressDescriptions = new ArrayList<>();
 
+    @ElementCollection
+    @CollectionTable(name = "progress_images", joinColumns = @JoinColumn(name = "progress_id"))
+    @Column(name = "image_url", nullable = false)
+    private List<String> progressImages = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by", nullable = true)
     private User updatedBy;

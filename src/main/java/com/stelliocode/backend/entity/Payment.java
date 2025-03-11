@@ -27,7 +27,7 @@ public class Payment {
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 
-    @Column(name = "stripe_transaction_id", nullable = false, unique = true)
+    @Column(name = "stripe_transaction_id", nullable = true , unique = true)
     private String stripeTransactionId;
 
     @Column(nullable = false, precision = 10, scale = 2)
