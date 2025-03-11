@@ -93,6 +93,15 @@ public class DeveloperDashboardController {
         return ResponseEntity.ok(progressList);
     }
 
+    @GetMapping("{developerId}/meetings/{projectId}")
+    public ResponseEntity<List<MeetingByIdResponseDTO>> getAllMeetingsForDeveloper(
+            @PathVariable UUID developerId,
+            @PathVariable UUID projectId) {
+
+        List<MeetingByIdResponseDTO> meetings = meetingService.getAllMeetingsByProjectId(projectId);
+        return ResponseEntity.ok(meetings);
+    }
+
     @GetMapping("/{developerId}/projects/{projectId}/payment")
     public ResponseEntity<?> getPaymentById(
             @PathVariable UUID developerId,

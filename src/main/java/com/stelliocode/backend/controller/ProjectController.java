@@ -1,9 +1,11 @@
 package com.stelliocode.backend.controller;
 
 import com.stelliocode.backend.dto.FollowUpProjectResponseDTO;
+import com.stelliocode.backend.dto.MeetingByIdResponseDTO;
 import com.stelliocode.backend.dto.ProjectProgressResponse;
 import com.stelliocode.backend.entity.Payment;
 import com.stelliocode.backend.entity.Project;
+import com.stelliocode.backend.service.MeetingService;
 import com.stelliocode.backend.service.PaymentService;
 import com.stelliocode.backend.service.ProjectProgressService;
 import com.stelliocode.backend.service.ProjectService;
@@ -26,6 +28,7 @@ public class ProjectController {
 
     private final ProjectService projectService;
     private final PaymentService paymentService;
+    private final MeetingService meetingService;
     private final ProjectProgressService projectProgressService;
 
     @GetMapping("/{clientId}/{projectId}")
@@ -62,5 +65,14 @@ public class ProjectController {
 
         List<ProjectProgressResponse> progressList = projectProgressService.getProgressByProjectId(projectId);
         return ResponseEntity.ok(progressList);
+    }
+
+    @GetMapping("{clientId}/meetings/{projectId}")
+    public ResponseEntity<List<MeetingByIdResponseDTO>> getAllMeetingsForClient(
+            @PathVariable String clientId,
+            @PathVariable UUID projectId) {
+
+        List<MeetingByIdResponseDTO> meetings = meetingService.getAllMeetingsByProjectId(projectId);
+        return ResponseEntity.ok(meetings);
     }
 }

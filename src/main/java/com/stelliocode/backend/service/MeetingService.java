@@ -1,5 +1,6 @@
 package com.stelliocode.backend.service;
 
+import com.stelliocode.backend.dto.MeetingByIdResponseDTO;
 import com.stelliocode.backend.dto.MeetingResponseDTO;
 import com.stelliocode.backend.dto.UpdatedMeetingResponseDTO;
 import com.stelliocode.backend.entity.*;
@@ -93,6 +94,34 @@ public class MeetingService {
                 .collect(Collectors.toList());
 
         return new PageImpl<>(meetingsDTO, pageable, meetingsPage.getTotalElements());
+    }
+
+    public List<MeetingByIdResponseDTO> getAllMeetingsByProjectId(UUID projectId) {
+        List<Meeting> meetings = meetingRepository.findByProjectIdOrderByScheduledAtAsc(projectId);
+
+        return meetings.stream()
+                .map(meeting -> {
+                    List<String> participants = developerProjectRepository.findByProjectId(projectId)
+                            .stream()
+                            .map(developerProject -> developerProject.getDeveloper().getFullName())
+                            .collect(Collectors.toList());
+
+                    // Adiciona o cliente como participante
+                    participants.add(meeting.getClient().getName());
+
+                    return MeetingByIdResponseDTO.builder()
+                            .id(meeting.getId())
+                            .status(meeting.getStatus())
+                            .clientId(meeting.getClient().getId())
+                            .clientName(meeting.getClient().getName())
+                            .projectId(meeting.getProject().getId())
+                            .projectName(meeting.getProject().getTitle())
+                            .projectDescription(meeting.getProject().getDescription())
+                            .scheduledAt(meeting.getScheduledAt())
+                            .participants(participants)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional
