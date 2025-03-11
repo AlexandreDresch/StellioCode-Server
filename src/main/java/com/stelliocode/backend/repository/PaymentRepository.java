@@ -23,5 +23,14 @@ public interface PaymentRepository extends JpaRepository<Payment, String> {
             @Param("googleId") String googleId
     );
 
+    @Query("SELECT p FROM Payment p " +
+            "JOIN p.project pr " +
+            "JOIN DeveloperProject dp ON dp.project.id = pr.id " +
+            "WHERE pr.id = :projectId AND dp.developer.id = :developerId")
+    Optional<Payment> findByProjectIdAndDeveloperId(
+            @Param("projectId") UUID projectId,
+            @Param("developerId") UUID developerId
+    );
+
     Optional<Payment> findByProjectId(UUID projectId);
 }

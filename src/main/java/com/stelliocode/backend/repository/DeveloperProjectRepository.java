@@ -1,6 +1,8 @@
 package com.stelliocode.backend.repository;
 
 import com.stelliocode.backend.entity.DeveloperProject;
+import com.stelliocode.backend.entity.Project;
+import com.stelliocode.backend.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,5 +35,9 @@ public interface DeveloperProjectRepository extends JpaRepository<DeveloperProje
     List<DeveloperProject> findByProjectId(UUID projectId);
 
     Optional<DeveloperProject> findByDeveloperIdAndProjectId(UUID developerId, UUID projectId);
+
+    boolean existsByDeveloperAndProject(User developer, Project project);
+
+    boolean existsByDeveloperIdAndProjectId(UUID developerId, UUID projectId);
 }
 

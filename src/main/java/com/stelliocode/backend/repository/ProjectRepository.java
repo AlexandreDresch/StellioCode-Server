@@ -65,4 +65,12 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
     List<Object[]> countProjectsByServiceSince(@Param("startOfYear") LocalDateTime startOfYear);
 
     Optional<Project> findByIdAndClientGoogleId(UUID projectId, String clientGoogleId);
+
+    @Query("SELECT p FROM Project p " +
+            "JOIN DeveloperProject dp ON dp.project.id = p.id " +
+            "WHERE p.id = :projectId AND dp.developer.id = :developerId")
+    Optional<Project> findByIdAndDeveloperId(
+            @Param("projectId") UUID projectId,
+            @Param("developerId") UUID developerId
+    );
 }

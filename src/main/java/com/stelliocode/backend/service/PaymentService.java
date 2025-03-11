@@ -19,7 +19,6 @@ import java.util.UUID;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
-//    private final StripeService stripeService;
 
     @Transactional
     public Payment createInitialPayment(Project project, BigDecimal amount) {
@@ -37,6 +36,18 @@ public class PaymentService {
 
     public PaymentResponse getPaymentByIdAndClientGoogleId(UUID projectId, String googleId) {
         Payment payment = paymentRepository.findByProjectIdAndClientGoogleId(projectId, googleId)
+                .orElseThrow(() -> new NotFoundException("Payment not found."));
+
+        return new PaymentResponse(
+                payment.getId(),
+                payment.getProject().getTitle(),
+                payment.getAmount(),
+                payment.getPaymentStatus().toString()
+        );
+    }
+
+    public PaymentResponse getPaymentByIdAndDeveloperId(UUID projectId, UUID developerId) {
+        Payment payment = paymentRepository.findByProjectIdAndDeveloperId(projectId, developerId)
                 .orElseThrow(() -> new NotFoundException("Payment not found."));
 
         return new PaymentResponse(
