@@ -1,22 +1,36 @@
 package com.stelliocode.backend.service;
 
+import com.stelliocode.backend.exception.InvalidCredentialsException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.security.Key;
 import java.util.Date;
+import jakarta.annotation.PostConstruct;
 import java.util.function.Function;
 
 @Service
 public class JwtTokenService {
 
     @Value("${jwt.secret}")
-    private String secretKey;
+    private String secretKeyString;
 
-    public String extractUsername(String token) {
+    private static Key secretKey;
+
+    @PostConstruct
+    public void initializeKey() {
+        if (secretKeyString == null || secretKeyString.isEmpty() || secretKeyString.getBytes().length < 32) {
+            throw new IllegalArgumentException("A chave secreta deve ter pelo menos 32 caracteres.");
+        }
+        this.secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes());
+    }
+
+    public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -29,26 +43,38 @@ public class JwtTokenService {
         try {
             return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
         } catch (Exception e) {
-            throw new RuntimeException("Token inválido ou expirado.");
+            throw new InvalidCredentialsException("Token is invalid or expired.");
         }
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public static String generateToken(String email, String role) {
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
+                .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))  // 10 horas de validade
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .claim("role", role)
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
 
+    public String extractRole(String token) {
+        return Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role", String.class);
+    }
+
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        String email = extractEmail(token);
+        return email.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
-        Date expiration = extractClaim(token, Claims::getExpiration);
-        return expiration.before(new Date());
+        return extractExpiration(token).before(new Date());
+    }
+
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
     }
 }
