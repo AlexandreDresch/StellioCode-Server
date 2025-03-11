@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AuthenticationService implements UserDetailsService {
@@ -36,7 +37,7 @@ public class AuthenticationService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenService jwtTokenService;
 
-    public AuthenticationService (
+    public AuthenticationService(
             UserRepository userRepository,
             TechnologyRepository technologyRepository,
             UserTechnologyRepository userTechnologyRepository,
@@ -157,4 +158,9 @@ public class AuthenticationService implements UserDetailsService {
         );
     }
 
+    public UUID getUserIdFromPrincipal(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getId();
+    }
 }
