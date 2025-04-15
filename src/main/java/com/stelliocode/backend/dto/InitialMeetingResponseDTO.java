@@ -8,7 +8,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public class InitialMeetingResponseDTO {
     private UUID clientId;
+    private String clientGoogleId;
     private String clientName;
+    private UUID projectId;
     private String projectTitle;
     private String projectStatus;
     private String meetingStatus;

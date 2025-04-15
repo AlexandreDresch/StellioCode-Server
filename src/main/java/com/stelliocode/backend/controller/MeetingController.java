@@ -39,7 +39,9 @@ public class MeetingController {
 
         InitialMeetingResponseDTO response = new InitialMeetingResponseDTO(
                 meeting.getClient().getId(),
+                meeting.getClient().getGoogleId(),
                 meeting.getClient().getName(),
+                meeting.getProject().getId(),
                 meeting.getProject().getTitle(),
                 meeting.getProject().getStatus().toString(),
                 meeting.getStatus(),
